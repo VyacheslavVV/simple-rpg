@@ -1,0 +1,14 @@
+{
+  "version": 2,
+  "dgSpecHash": "RI8UJGe6RKkWdSw48AsBsg77lCadCBE2DzSoihJl+3IfHVGN8CzV/Iz7k3JBtYl6VO+ZsgnaOju4q2w8+4V99g==",
+  "success": true,
+  "projectFilePath": "C:\\STUDY\\simple-rpg\\simple-rpg.csproj",
+  "expectedPackageFiles": [
+    "C:\\Users\\vjaceslavs\\.nuget\\packages\\microsoft.aspnetcore.spaservices.extensions\\8.0.15\\microsoft.aspnetcore.spaservices.extensions.8.0.15.nupkg.sha512",
+    "C:\\Users\\vjaceslavs\\.nuget\\packages\\microsoft.extensions.fileproviders.abstractions\\8.0.0\\microsoft.extensions.fileproviders.abstractions.8.0.0.nupkg.sha512",
+    "C:\\Users\\vjaceslavs\\.nuget\\packages\\microsoft.extensions.fileproviders.physical\\8.0.0\\microsoft.extensions.fileproviders.physical.8.0.0.nupkg.sha512",
+    "C:\\Users\\vjaceslavs\\.nuget\\packages\\microsoft.extensions.filesystemglobbing\\8.0.0\\microsoft.extensions.filesystemglobbing.8.0.0.nupkg.sha512",
+    "C:\\Users\\vjaceslavs\\.nuget\\packages\\microsoft.extensions.primitives\\8.0.0\\microsoft.extensions.primitives.8.0.0.nupkg.sha512"
+  ],
+  "logs": []
+}
