@@ -1,3 +1,6 @@
 .idea/
 bin/
-obj/clientapp/.history/
+obj/
+clientapp/.history/
+clientapp/.vscode/
+
