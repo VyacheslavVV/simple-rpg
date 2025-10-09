@@ -7,13 +7,22 @@
       <div class="inventory-item">🛡️: {{inventory.shield}} </div>
     </div>
 
-    <div class="field-container" ref="container">
+    <div
+      class="field-container"
+      ref="container"
+      :style="{ width: containerWidth + 'px', height: containerHeight + 'px' }"
+    >
       <!-- <template v-for="row in 10" :key="row">
         <div v-for="col in 10" :key="col" class="field-tile">{{row}}x{{col}}</div>
       </template> -->
       <div
        class="player" ref="player"
-       :style="{ left: position.x + 'px', top: position.y + 'px' }"
+       :style="{
+          left: playerPosition.x + 'px',
+          top: playerPosition.y + 'px',
+          width: playerWidth + 'px',
+          height: playerHeight + 'px',
+       }"
       >🐻</div>
 
       <div
@@ -29,14 +38,14 @@
       ></div>
 
       <div
-        v-for="(item, index) in collectibleList"
+        v-for="(item, index) in collectibles.list"
         :key="index"
         class="collectible"
         :style="{
-          left: item.x + 'px',
-          top: item.y + 'px',
-          width: item.width + 'px',
-          height: item.height + 'px'
+          left: item.rect.left + 'px',
+          top: item.rect.top + 'px',
+          width: (item.rect.right - item.rect.left) + 'px',
+          height: (item.rect.bottom - item.rect.top) + 'px'
         }"
       >{{item.icon}}</div>
     </div>
@@ -46,14 +55,26 @@
 
 <script setup>
   import { ref, onMounted, onBeforeUnmount } from 'vue'
+  import Collectibles from '../collectibles/Collectibles.js';
+  
+  const containerWidth = 500;
+  const containerHeight = 500;
+  const playerWidth = 50;
+  const playerHeight = 50;
 
   const container = ref(null);
   const player = ref(null);
-  const position = ref({ x: 0, y: 0 });
+  const playerPosition = ref({ x: 0, y: 0 });
   const speed = 5;
   const keysPressed = ref({});
-  let containerRectSize = { width: 0, height: 0 };
-  let playerRectSize = { width: 0, height: 0 };
+  const containerRectSize = {
+    width: containerWidth,
+    height: containerHeight,
+  };
+  const playerRectSize = {
+    width: playerWidth,
+    height: playerHeight,
+  };
 
   const obstacleList = ref([
     { x: 100, y: 100, width: 50, height: 50 },
@@ -61,7 +82,6 @@
     { x: 300, y: 300, width: 50, height: 50 }
   ]);
 
-  const collectibleList = ref([]);
   const inventory = ref({
     coins: 0,
     gems: 0,
@@ -69,21 +89,7 @@
     shield: 0
   });
 
-  function updateObjectSizes() {
-    if (container.value) {
-      containerRectSize = {
-        width: container.value.offsetWidth,
-        height: container.value.offsetHeight
-      };
-    }
-  
-    if (player.value) {
-      playerRectSize = {
-        width: player.value.offsetWidth,
-        height: player.value.offsetHeight
-      };
-    }
-  }
+  const collectibles = new Collectibles();
 
   // Обработчики нажатия клавиш
   function handleKeyDown(e) {
@@ -130,69 +136,15 @@
     return false;
   }
 
-  function checkCollectibleCollision(newX, newY) {
 
-    const playerRect = {
-      left: newX,
-      top: newY,
-      right: newX + playerRectSize.width,
-      bottom: newY + playerRectSize.height
-    };
-
-    let collectibleIndex = null;
-
-    for (const [index, item] of collectibleList.value.entries()) {
-      const collectibleRect = {
-        left: item.x,
-        top: item.y,
-        right: item.x + item.width,
-        bottom: item.y + item.height
-      };
-
-      if (playerRect.right > collectibleRect.left &&
-          playerRect.left < collectibleRect.right &&
-          playerRect.bottom > collectibleRect.top &&
-          playerRect.top < collectibleRect.bottom) {
-        collectibleIndex = index;
-        break;
-      }
-    }
-
-    if (collectibleIndex !== null) {
-      pickCollectible(collectibleIndex)
-    }
-  }
-
-  function pickCollectible(collectibleIndex) {
-    const collectible = collectibleList.value[collectibleIndex];
-
-    collectibleList.value = collectibleList.value.filter((_, index) => index !== collectibleIndex);
-
-    console.log(`Collectible at index ${collectibleIndex} picked!`);
-
-    switch (collectible.type) {
-      case 'coin':
-        inventory.value.coins += 1;
-        break;
-      case 'gem':
-        inventory.value.gems += 1;
-        break;
-      case 'sword':
-        inventory.value.sword += 1;
-        break;
-      case 'shield':
-        inventory.value.shield += 1;
-        break;
-    }
-  }
 
   // Анимация движения
   function moveElement() {
-    let newX = position.value.x;
-    let newY = position.value.y;
+    let newX = playerPosition.value.x;
+    let newY = playerPosition.value.y;
     //console.log('newX', newX);
 
-    checkCollectibleCollision(newX, newY);
+    collectibles.checkCollectibleCollision(newX, newY, playerRectSize, inventory);
 
     if (keysPressed.value.ArrowUp) {
       newY -= speed;
@@ -208,110 +160,25 @@
     }
 
      if (!checkObstacleCollision(newX, newY)) {
-      position.value = { x: newX, y: newY };
-    } else if (!checkObstacleCollision(newX, position.value.y)) {
+      playerPosition.value = { x: newX, y: newY };
+    } else if (!checkObstacleCollision(newX, playerPosition.value.y)) {
       // Попробуем двигаться только по X
-      position.value.x = newX;
-    } else if (!checkObstacleCollision(position.value.x, newY)) {
+      playerPosition.value.x = newX;
+    } else if (!checkObstacleCollision(playerPosition.value.x, newY)) {
       // Попробуем двигаться только по Y
-      position.value.y = newY;
+      playerPosition.value.y = newY;
     }
 
     requestAnimationFrame(moveElement);
   }
 
-  function placeCollectibles() {
-    const containerWidth = containerRectSize.width;
-    const containerHeight = containerRectSize.height;
-
-    // отдельная функция?
-    const occupiedRects = obstacleList.value.map(obstacle => ({
-      left: obstacle.x,
-      top: obstacle.y,
-      right: obstacle.x + obstacle.width,
-      bottom: obstacle.y + obstacle.height
-    }));
-
-    occupiedRects.push(
-      {
-        left: position.value.x,
-        top: position.value.y,
-        right: position.value.x + playerRectSize.width,
-        bottom: position.value.y + playerRectSize.height
-      }
-    );
-    //
-
-    console.log('occupiedRects', occupiedRects);
-    for (let i = 0; i < 5; i++) {
-      const x = Math.round(Math.random() * (containerWidth - 24));
-      const y = Math.round(Math.random() * (containerHeight - 24));
-
-      const collectibleRect = {
-        left: x,
-        top: y,
-        right: x + 24,
-        bottom: y + 24
-      };
-
-      if (!canPlaceCollectible(occupiedRects, collectibleRect)) {
-        continue; // Пропускаем, если место занято
-      }
-
-      console.log('place collectible', collectibleRect);
-      var randomCollectible = getRandomCollectible();
-
-      collectibleList.value.push({
-        x: x,
-        y: y,
-        width: 24,
-        height: 24,
-        icon: randomCollectible.icon,
-        type: randomCollectible.type,
-      });
-
-      occupiedRects.push({
-          left: x,
-          top: y,
-          right: x + 24,
-          bottom: y + 24
-      });
-    }
-  }
-
-  function getRandomCollectible() {
-    const collectibles = [
-      { icon: '💰', type: 'coin' },
-      { icon: '💎', type: 'gem' },
-      { icon: '🗡️', type: 'sword' },
-      { icon: '🛡️', type: 'shield' }
-    ];
-
-    return collectibles[Math.floor(Math.random() * collectibles.length)];
-  }
-
-  function canPlaceCollectible(occupiedRects, collectibleRect) {
-    for (const obstacle of occupiedRects) {
-
-      if (collectibleRect.right > obstacle.left &&
-          collectibleRect.left < obstacle.right &&
-          collectibleRect.bottom > obstacle.top &&
-          collectibleRect.top < obstacle.bottom) {
-        return false;
-      }
-    }
-
-    return true;
-  }
 
 // Устанавливаем и удаляем обработчики
   onMounted(() => {
-    updateObjectSizes();
     window.addEventListener('keydown', handleKeyDown);
     window.addEventListener('keyup', handleKeyUp);
-    window.addEventListener('resize', updateObjectSizes);
 
-    placeCollectibles();
+    collectibles.placeCollectibles(playerRectSize, containerRectSize, obstacleList, playerPosition);
 
     moveElement();
   });
@@ -319,7 +186,6 @@
   onBeforeUnmount(() => {
     window.removeEventListener('keydown', handleKeyDown);
     window.removeEventListener('keyup', handleKeyUp);
-    window.removeEventListener('resize', updateObjectSizes);
   });
 </script>
 
