@@ -1,8 +1,8 @@
 <template>
   <div class="hello">
     <div class="inventory-container">
-      <div class="inventory-item">💰: {{inventory.coins}} </div>
-      <div class="inventory-item">💎: {{inventory.gems}} </div>
+      <div class="inventory-item">💰: {{inventory.coin}} </div>
+      <div class="inventory-item">💎: {{inventory.gem}} </div>
       <div class="inventory-item">🗡️: {{inventory.sword}} </div>
       <div class="inventory-item">🛡️: {{inventory.shield}} </div>
     </div>
@@ -30,10 +30,10 @@
         :key="index"
         class="obstacle"
         :style="{
-          left: obstacle.x + 'px',
-          top: obstacle.y + 'px',
-          width: obstacle.width + 'px',
-          height: obstacle.height + 'px'
+          left: obstacle.left + 'px',
+          top: obstacle.top + 'px',
+          width: (obstacle.right - obstacle.left) + 'px',
+          height: (obstacle.bottom - obstacle.top) + 'px'
         }"
       ></div>
 
@@ -48,6 +48,18 @@
           height: (item.rect.bottom - item.rect.top) + 'px'
         }"
       >{{item.icon}}</div>
+
+      <div
+        v-for="(item, index) in challenges.list"
+        :key="index"
+        class="challenge"
+        :style="{
+          left: item.rect.left + 'px',
+          top: item.rect.top + 'px',
+          width: (item.rect.right - item.rect.left) + 'px',
+          height: (item.rect.bottom - item.rect.top) + 'px'
+        }"
+      >{{item.icon}}</div>
     </div>
 
   </div>
@@ -55,7 +67,9 @@
 
 <script setup>
   import { ref, onMounted, onBeforeUnmount } from 'vue'
+  import { createRect, doesRectsCollide } from '../utils/geometry.js';
   import Collectibles from '../collectibles/Collectibles.js';
+  import Challenges from '../challenges/Challenges.js';
   
   const containerWidth = 500;
   const containerHeight = 500;
@@ -77,19 +91,22 @@
   };
 
   const obstacleList = ref([
-    { x: 100, y: 100, width: 50, height: 50 },
-    { x: 200, y: 200, width: 50, height: 50 },
-    { x: 300, y: 300, width: 50, height: 50 }
+    createRect(100, 100, 50, 50),
+    createRect(200, 200, 50, 50),
+    createRect(300, 300, 50, 50),
   ]);
 
+  console.log('obstacleList', obstacleList.value);
+
   const inventory = ref({
-    coins: 0,
-    gems: 0,
+    coin: 0,
+    gem: 0,
     sword: 0,
     shield: 0
   });
 
   const collectibles = new Collectibles();
+  const challenges = new Challenges();
 
   // Обработчики нажатия клавиш
   function handleKeyDown(e) {
@@ -118,25 +135,13 @@
     };
 
     for (const obstacle of obstacleList.value) {
-      const obstacleRect = {
-        left: obstacle.x,
-        top: obstacle.y,
-        right: obstacle.x + obstacle.width,
-        bottom: obstacle.y + obstacle.height
-      };
-
-      if (playerRect.right > obstacleRect.left &&
-          playerRect.left < obstacleRect.right &&
-          playerRect.bottom > obstacleRect.top &&
-          playerRect.top < obstacleRect.bottom) {
+      if (doesRectsCollide(playerRect, obstacle)) {
         return true;
       }
     }
 
     return false;
   }
-
-
 
   // Анимация движения
   function moveElement() {
@@ -178,7 +183,16 @@
     window.addEventListener('keydown', handleKeyDown);
     window.addEventListener('keyup', handleKeyUp);
 
-    collectibles.placeCollectibles(playerRectSize, containerRectSize, obstacleList, playerPosition);
+    let occupiedRectList = [
+      ...obstacleList.value,
+      createRect(playerPosition.value.x, playerPosition.value.y, playerRectSize.width, playerRectSize.height),
+    ];
+
+    collectibles.generateCollectibles(containerRectSize, occupiedRectList);
+
+    occupiedRectList = occupiedRectList.concat(collectibles.list);
+
+    challenges.generateChallenges(containerRectSize, occupiedRectList);
 
     moveElement();
   });

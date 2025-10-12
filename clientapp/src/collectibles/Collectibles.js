@@ -1,5 +1,6 @@
 import { ref } from 'vue'
 import { createRect, doesRectsCollide } from '../utils/geometry.js'
+import { canPlaceObject } from '../utils/mapObjects.js'
 import {
   MAX_COLLECTIBLE_COUNT,
   COLLECTIBLE_SIZE,
@@ -39,33 +40,15 @@ export default class Collectibles {
 
     console.log(`Collectible at index ${collectibleIndex} picked!`);
 
-    switch (collectible.type) {
-      case 'coin':
-        inventory.value.coins += 1;
-        break;
-      case 'gem':
-        inventory.value.gems += 1;
-        break;
-      case 'sword':
-        inventory.value.sword += 1;
-        break;
-      case 'shield':
-        inventory.value.shield += 1;
-        break;
-    }
+    inventory.value[collectible.type] += 1;
   }
 
-  placeCollectibles(playerRectSize, containerRectSize, obstacleList, playerPosition) {
+  generateCollectibles(containerRectSize, occupiedRectList) {
     const containerWidth = containerRectSize.width;
     const containerHeight = containerRectSize.height;
 
     // отдельная функция?
-    const occupiedRects = obstacleList.value.map(obstacle =>
-      createRect(obstacle.x, obstacle.y, obstacle.width, obstacle.height));
-
-    occupiedRects.push(
-      createRect(playerPosition.value.x, playerPosition.value.y, playerRectSize.width, playerRectSize.height)
-    );
+    const occupiedRects = [ ...occupiedRectList ];
     //
 
     console.log('occupiedRects', occupiedRects);
@@ -75,7 +58,7 @@ export default class Collectibles {
 
       const collectibleRect = createRect(x, y, COLLECTIBLE_SIZE, COLLECTIBLE_SIZE);
 
-      if (!canPlaceCollectible(occupiedRects, collectibleRect)) {
+      if (!canPlaceObject(occupiedRects, collectibleRect)) {
         continue; // Пропускаем, если место занято
       }
 
@@ -97,15 +80,4 @@ export default class Collectibles {
 
 function getRandomCollectible() {
   return COLLECTIBLE_TYPES[Math.floor(Math.random() * COLLECTIBLE_TYPES.length)];
-}
-
-function canPlaceCollectible(occupiedRects, collectibleRect) {
-  for (const obstacle of occupiedRects) {
-
-    if (doesRectsCollide(collectibleRect, obstacle)) {
-      return false;
-    }
-  }
-
-  return true;
 }
