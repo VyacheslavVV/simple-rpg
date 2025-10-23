@@ -43,11 +43,11 @@ The project will feature player interactions, challenges, and state persistence.
     npm run dev
     ```
 
-4. Backend (.NET)
+### Backend (.NET)
 
-    Ensure you have .NET SDK installed.
+Ensure you have .NET SDK installed.
 
-    Run the backend using Visual Studio or via command line:
+1. Run the backend using Visual Studio or via command line:
 
     ```bash
     dotnet run
