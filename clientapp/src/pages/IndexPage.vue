@@ -12,18 +12,15 @@
       ref="container"
       :style="{ width: containerWidth + 'px', height: containerHeight + 'px' }"
     >
-      <!-- <template v-for="row in 10" :key="row">
-        <div v-for="col in 10" :key="col" class="field-tile">{{row}}x{{col}}</div>
-      </template> -->
       <div
-       class="player" ref="player"
+       class="player" ref="playerContainer"
        :style="{
           left: playerPosition.x + 'px',
           top: playerPosition.y + 'px',
           width: playerWidth + 'px',
           height: playerHeight + 'px',
        }"
-      >🐻</div>
+      >{{player.icon}}</div>
 
       <div
         v-for="(obstacle, index) in obstacleList"
@@ -68,8 +65,9 @@
 <script setup>
   import { ref, onMounted, onBeforeUnmount } from 'vue'
   import { createRect, doesRectsCollide } from '../utils/geometry.js';
-  import Collectibles from '../collectibles/Collectibles.js';
-  import Challenges from '../challenges/Challenges.js';
+  import Collectibles from '../entities/Collectibles.js';
+  import Challenges from '../entities/Challenges.js';
+  import Player from '../entities/Player.js';
   
   const containerWidth = 500;
   const containerHeight = 500;
@@ -77,7 +75,6 @@
   const playerHeight = 50;
 
   const container = ref(null);
-  const player = ref(null);
   const playerPosition = ref({ x: 0, y: 0 });
   const speed = 5;
   const keysPressed = ref({});
@@ -107,6 +104,7 @@
 
   const collectibles = new Collectibles();
   const challenges = new Challenges();
+  const player = ref(new Player(0, 0, playerWidth, playerHeight));
 
   // Обработчики нажатия клавиш
   function handleKeyDown(e) {
