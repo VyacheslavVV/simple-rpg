@@ -31,19 +31,19 @@ The project will feature player interactions, challenges, and state persistence.
    cd clientapp
    ```
 
-    Install dependencies:
+2. Install dependencies:
 
     ```bash
     npm install
     ```
 
-    To run the frontend locally:
+3. Run the frontend locally:
 
     ```bash
     npm run dev
     ```
 
-    Backend (.NET)
+4. Backend (.NET)
 
     Ensure you have .NET SDK installed.
 
@@ -53,13 +53,17 @@ The project will feature player interactions, challenges, and state persistence.
     dotnet run
     ```
 
-    Note: Backend for now is an empty template.
+Note: Backend for now is an empty template.
+
+---
 
 ## 🧩 Current Features
 
 Vue 3 frontend displaying game mechanics.
 
 Basic structure set for player interactions, challenges, and future state saving.
+
+---
 
 ## ⏳ Next Steps
 
@@ -72,6 +76,12 @@ Challenge interactions: Allow players to either run away or attempt to solve cha
 Game state persistence: Integrate the backend for saving and loading the game state.
 
 UI/UX improvements: Enhance game interface for a more interactive experience.
+
+---
+
+## 📸 Screenshot
+
+![Game Screenshot](./files/screenshot.png)
 
 ---
 
